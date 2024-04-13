@@ -1,0 +1,11 @@
+langchain-openai
+huggingface_hub
+transformers
+langchain
+langchain-core
+langchain-community
+tavily-python
+python-dotenv
+langchainhub
+requests
+pydantic
