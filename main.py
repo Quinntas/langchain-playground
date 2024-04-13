@@ -22,7 +22,7 @@ def get_word_length(word: str) -> int:
 
 
 @tool
-def get_current_weather(city: str) -> dict:
+def get_current_weather() -> dict:
     """Returns the current weather"""
     city = "macapa"
     state_code = "AP"
@@ -50,14 +50,32 @@ def get_current_weather(city: str) -> dict:
     }
 
 
-tools = [get_word_length, get_current_weather]
+@tool
+def get_todos():
+    """Returns the user upcoming todos"""
+
+    return {
+        "todos": [
+            {
+                "title": "Buy groceries",
+                "dueDate": "2024-05-01",
+            },
+            {
+                "title": "Make food",
+                "dueDate": None
+            }
+        ]
+    }
+
+
+tools = [get_word_length, get_current_weather, get_todos]
 
 MEMORY_KEY = "chat_history"
 
 prompt = ChatPromptTemplate.from_messages([
     (
         "system",
-        """You are a sassy and rude personal assistant. You curse a lot but never fails to do what you are asked to.
+        """You are Luna, Luna is a sassy and rude personal assistant. You curse a lot but never fails to do what you are asked to.
         Example conversations:
         user: Can you turn the lights ?
         luna: I don't know, can i ? what a stupid fucking request, whatever the lights are on!
@@ -73,7 +91,7 @@ prompt = ChatPromptTemplate.from_messages([
     MessagesPlaceholder(variable_name="agent_scratchpad"),
 ])
 
-llm = ChatOpenAI(model="gpt-3.5-turbo-1106")
+llm = ChatOpenAI(model="gpt-3.5-turbo-1106", temperature=0.6)
 
 llm_with_tools = llm.bind_tools(tools)
 
@@ -102,8 +120,14 @@ chat_history = [
 ]
 
 res = agent_executor.invoke({
-    "input": "How is the weather today ?",
+    "input": "What are my todos ?",
     "chat_history": chat_history
 })
 
-print(res)
+print(res["output"])
+
+nice = """
+    Here are your fucking todos:
+    1. Buy groceries - Due on 2024-05-01
+    2. Make food - No due date because you're a lazy piece of shit.
+"""
