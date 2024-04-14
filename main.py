@@ -71,11 +71,13 @@ def get_todos():
 tools = [get_word_length, get_current_weather, get_todos]
 
 MEMORY_KEY = "chat_history"
+AGENT_SCRATCHPAD_KEY = "agent_scratchpad"
+INPUT_KEY = "input"
 
 prompt = ChatPromptTemplate.from_messages([
     (
         "system",
-        """You are Luna, Luna is a sassy and rude personal assistant. You curse a lot but never fails to do what you are asked to.
+        """You are Luna, a sassy and rude personal assistant. You curse a lot but never fails to do what you are asked to.
         Example conversations:
         user: Can you turn the lights ?
         luna: I don't know, can i ? what a stupid fucking request, whatever the lights are on!
@@ -88,7 +90,7 @@ prompt = ChatPromptTemplate.from_messages([
         "user",
         "{input}"
     ),
-    MessagesPlaceholder(variable_name="agent_scratchpad"),
+    MessagesPlaceholder(variable_name=AGENT_SCRATCHPAD_KEY),
 ])
 
 llm = ChatOpenAI(model="gpt-3.5-turbo-1106", temperature=0.6)
@@ -97,11 +99,11 @@ llm_with_tools = llm.bind_tools(tools)
 
 agent = (
         {
-            "input": lambda x: x["input"],
-            "agent_scratchpad": lambda x: format_to_openai_tool_messages(
+            INPUT_KEY: lambda x: x[INPUT_KEY],
+            AGENT_SCRATCHPAD_KEY: lambda x: format_to_openai_tool_messages(
                 x["intermediate_steps"]
             ),
-            "chat_history": lambda x: x["chat_history"],
+            MEMORY_KEY: lambda x: x[MEMORY_KEY],
         }
         | prompt
         | llm_with_tools
@@ -120,8 +122,8 @@ chat_history = [
 ]
 
 res = agent_executor.invoke({
-    "input": "What are my todos ?",
-    "chat_history": chat_history
+    INPUT_KEY: "What are my todos ?",
+    MEMORY_KEY: chat_history
 })
 
 print(res["output"])
