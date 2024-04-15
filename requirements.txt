@@ -9,3 +9,5 @@ python-dotenv
 langchainhub
 requests
 pydantic
+torch
+ctransformers
